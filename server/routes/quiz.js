@@ -34,4 +34,13 @@ router.post("/upload-quiz", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  const Quiz = await Quizzes.findById(req.params.id);
+
+  if (!Quiz)
+    return res.status(404).send("The Quiz with the given ID was not found.");
+
+  res.status(201).json(Quiz);
+});
+
 module.exports = router;
