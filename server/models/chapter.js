@@ -18,6 +18,12 @@ const chapterSchema = mongoose.Schema({
       },
     },
   ],
+  quizzes: [
+    {
+      id: String,
+      quizNumber: Number,
+    },
+  ],
 });
 
 const Chapters = mongoose.model("Chapters", chapterSchema);
