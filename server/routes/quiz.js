@@ -21,9 +21,14 @@ router.get("/:id", async (req, res) => {
 
 //API route to upload a new Quiz.
 router.post("/upload-quiz", async (req, res) => {
-  const newQuiz = await Quizzes.create(req.body.Quiz);
+  console.log(req.body.Quiz);
+  console.log(req.body.chapterid);
+
+  let newQuiz = await Quizzes.create(req.body.Quiz);
+
+  console.log(newQuiz._id);
   const Chapter = await Chapters.findByIdAndUpdate(
-    { _id: req.body.chapterID },
+    { _id: req.body.chapterid },
     {
       quizzes: { id: newQuiz._id },
     },
@@ -32,10 +37,7 @@ router.post("/upload-quiz", async (req, res) => {
   if (!Chapter)
     return res.status(404).send("The Chapter with the given ID was not found.");
 
-  Chapter.save();
-  newQuiz.save();
-
-  return res.status(201).json(newQuiz);
+  return res.status(201).send(true);
 });
 
 router.put("/edit-quiz", async (req, res) => {
