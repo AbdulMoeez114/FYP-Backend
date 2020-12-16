@@ -11,8 +11,9 @@ router.get("/", async (req, res) => {
 
 //API route to get a quiz with a specific ID.
 router.get("/:id", async (req, res) => {
-  const Quiz = await Quizzes.findById(req.params.id);
-
+  const Chapter = await Chapters.findById(req.params.id);
+  const Quiz = await Quizzes.findById(Chapter.quizzes.id);
+  console.log(Quiz);
   if (!Quiz)
     return res.status(404).send("The Quiz with the given ID was not found.");
 
@@ -25,8 +26,8 @@ router.post("/upload-quiz", async (req, res) => {
   console.log(req.body.chapterid);
 
   let newQuiz = await Quizzes.create(req.body.Quiz);
+  console.log(newQuiz);
 
-  console.log(newQuiz._id);
   const Chapter = await Chapters.findByIdAndUpdate(
     { _id: req.body.chapterid },
     {
@@ -40,9 +41,13 @@ router.post("/upload-quiz", async (req, res) => {
   return res.status(201).send(true);
 });
 
+//API route to edit a Quiz
 router.put("/edit-quiz", async (req, res) => {
+  console.log(req.body.Quiz);
+  const Chapter = await Chapters.findById(req.body.chapterid);
+  console.log(Chapter.quizzes.id);
   const Quiz = await Quizzes.replaceOne(
-    { _id: req.body.quizID },
+    { _id: Chapter.quizzes.id },
     req.body.Quiz
   );
   if (!Quiz)
@@ -69,7 +74,6 @@ router.delete("/delete-quiz", async (req, res) => {
     return res.status(404).send("The Chapter with the given ID was not found.");
 
   res.status(201).json(Chapter);
-  Chapter.save();
 });
 
 module.exports = router;

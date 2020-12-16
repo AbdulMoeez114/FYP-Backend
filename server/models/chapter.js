@@ -10,17 +10,22 @@ const chapterSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  quizzes: {
+    id: String,
+  },
   topics: [
     {
+      topicid: {
+        type: String,
+        required: true,
+      },
       topicName: {
         type: String,
         required: true,
       },
     },
   ],
-  quizzes: {
-    id: String,
-  },
+
   result: {},
 });
 
