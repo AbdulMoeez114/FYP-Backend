@@ -12,6 +12,8 @@ router.get("/", async (req, res) => {
 //API route to get a quiz with a specific ID.
 router.get("/:id", async (req, res) => {
   const Chapter = await Chapters.findById(req.params.id);
+  if (Chapter.quizzes === {})
+    return res.status(404).send("Quiz for this chapter is not available.");
   const Quiz = await Quizzes.findById(Chapter.quizzes.id);
   console.log(Quiz);
   if (!Quiz)
@@ -56,24 +58,23 @@ router.put("/edit-quiz", async (req, res) => {
 });
 
 //API route to delete a Quiz.
-router.delete("/delete-quiz", async (req, res) => {
-  const Quiz = await Quizzes.findById(req.body.quizID);
-  if (!Quiz)
+router.delete("/:id", async (req, res) => {
+  const Chapter = await Chapters.findById(req.params.id);
+  console.log(Chapter.quizzes.id);
+  const del = await Quizzes.findByIdAndDelete(Chapter.quizzes.id);
+  if (!del)
     return res.status(404).send("The Quiz with the given ID was not found.");
+  // Chapter = await Chapters.findByIdAndUpdate(
+  //   { _id: req.body.chapterID },
+  //   {
+  //     quizzes: {},
+  //   },
+  //   { new: true }
+  // );
+  Chapter.set({ quizzes: {} });
+  Chapter.save();
 
-  Quiz.remove();
-  const Chapter = await Chapters.findByIdAndUpdate(
-    { _id: req.body.chapterID },
-    {
-      quizzes: {},
-    },
-    { new: true }
-  );
-
-  if (!Chapter)
-    return res.status(404).send("The Chapter with the given ID was not found.");
-
-  res.status(201).json(Chapter);
+  return res.status(201).json(Chapter);
 });
 
 module.exports = router;
