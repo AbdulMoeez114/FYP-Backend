@@ -15,14 +15,8 @@ const chapterSchema = mongoose.Schema({
   },
   topics: [
     {
-      topicid: {
-        type: String,
-        required: true,
-      },
-      topicName: {
-        type: String,
-        required: true,
-      },
+      topicid: String,
+      topicName: String,
     },
   ],
 

@@ -4,6 +4,7 @@ const multer = require("multer");
 var ffmpeg = require("fluent-ffmpeg");
 
 const { Video } = require("../models/Video");
+const { Chapters } = require("../models/chapter");
 
 const { auth } = require("../middleware/auth");
 
@@ -47,8 +48,8 @@ router.post("/thumbnail", (req, res) => {
   let fileDuration = "";
 
   ffmpeg.ffprobe(req.body.filePath, function (err, metadata) {
-    console.dir(metadata);
-    console.log(metadata.format.duration);
+    // console.dir(metadata);
+    // console.log(metadata.format.duration);
 
     fileDuration = metadata.format.duration;
   });
@@ -76,9 +77,22 @@ router.post("/thumbnail", (req, res) => {
     });
 });
 
-router.post("/uploadVideo", (req, res) => {
-  const video = new Video(req.body);
+router.post("/uploadVideo", async (req, res) => {
+  console.log(req.body);
+  const video = new Video(req.body.variables);
 
+  console.log(req.body.chapterid);
+  const Chapter = await Chapters.findByIdAndUpdate(
+    req.body.chapterid,
+    {
+      $push: {
+        topics: { topicid: video._id, topicName: video.title },
+      },
+    },
+    { new: true }
+  );
+
+  console.log(Chapter);
   video.save((err, video) => {
     if (err) return res.status(400).json({ success: false, err });
     return res.status(200).json({
