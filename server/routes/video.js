@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
+const { sendEmail } = require("../helper");
 const multer = require("multer");
 var ffmpeg = require("fluent-ffmpeg");
 
 const { Video } = require("../models/Video");
 const { Chapters } = require("../models/chapter");
+const { User } = require("../models/student");
 
 const { auth } = require("../middleware/auth");
 
@@ -78,10 +80,8 @@ router.post("/thumbnail", (req, res) => {
 });
 
 router.post("/uploadVideo", async (req, res) => {
-  console.log(req.body);
   const video = new Video(req.body.variables);
 
-  console.log(req.body.chapterid);
   const Chapter = await Chapters.findByIdAndUpdate(
     req.body.chapterid,
     {
@@ -92,13 +92,55 @@ router.post("/uploadVideo", async (req, res) => {
     { new: true }
   );
 
-  console.log(Chapter);
+  const students = await User.find();
+  const list = [];
+  students.forEach((element) => {
+    list.push(element.email);
+  });
+
   video.save((err, video) => {
     if (err) return res.status(400).json({ success: false, err });
+
+    //Sending Email to the Students.
+
+    sendEmail(Chapter.chapterName, list, "video");
     return res.status(200).json({
       success: true,
     });
   });
 });
 
+router.get("/getVideos", (req, res) => {
+  Video.find()
+    .populate("writer")
+    .exec((err, videos) => {
+      if (err) return res.status(400).send(err);
+      res.status(200).json({ success: true, videos });
+    });
+});
+
+router.post("/getVideo", (req, res) => {
+  Video.findOne({ _id: req.body.videoId })
+    .populate("writer")
+    .exec((err, video) => {
+      if (err) return res.status(400).send(err);
+      res.status(200).json({ success: true, video });
+    });
+});
+
+router.delete("/delete-video", async (req, res) => {
+  const video = await Video.findByIdAndRemove(req.body.id);
+
+  const Chapter = await Chapters.findByIdAndUpdate(
+    req.body.ch_id,
+    {
+      $pull: {
+        topics: { topicid: video._id, topicName: video.title },
+      },
+    },
+    { new: true }
+  );
+
+  return res.status(201).send("Video deleted successfully");
+});
 module.exports = router;

@@ -19,8 +19,6 @@ const chapterSchema = mongoose.Schema({
       topicName: String,
     },
   ],
-
-  result: {},
 });
 
 const Chapters = mongoose.model("Chapters", chapterSchema);

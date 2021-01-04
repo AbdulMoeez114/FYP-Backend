@@ -3,14 +3,16 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const auth = require("./routes/auth");
+const student = require("./routes/student");
 
 const config = require("./config/key");
+const config1 = require("./config/custom-environment-variables");
 
-// const mongoose = require("mongoose");
-// mongoose
-//   .connect(config.mongoURI, { useNewUrlParser: true })
-//   .then(() => console.log("DB connected"))
-//   .catch(err => console.error(err));
+if (!config1) {
+  console.error("FATAL ERROR: jwtPrivateKet not defined.");
+  process.exit(1);
+}
 
 const mongoose = require("mongoose");
 const connect = mongoose
@@ -31,6 +33,8 @@ app.use("/api/users", require("./routes/users"));
 app.use("/api/video", require("./routes/video"));
 app.use("/api/quiz", require("./routes/quiz"));
 app.use("/api/chapter", require("./routes/chapter"));
+app.use("/api/student", student);
+app.use("/api/auth", auth);
 
 //use this to show the image you have in node js server to client (react js)
 //https://stackoverflow.com/questions/48914987/send-image-path-from-node-js-express-server-to-react-client

@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { Quizzes } = require("../models/quiz");
 const { Chapters } = require("../models/chapter");
+const { User } = require("../models/student");
+const { sendEmail } = require("../helper");
 
 //API route to get all quizzes.
 router.get("/", async (req, res) => {
@@ -24,11 +26,7 @@ router.get("/:id", async (req, res) => {
 
 //API route to upload a new Quiz.
 router.post("/upload-quiz", async (req, res) => {
-  console.log(req.body.Quiz);
-  console.log(req.body.chapterid);
-
   let newQuiz = await Quizzes.create(req.body.Quiz);
-  console.log(newQuiz);
 
   const Chapter = await Chapters.findByIdAndUpdate(
     { _id: req.body.chapterid },
@@ -39,7 +37,14 @@ router.post("/upload-quiz", async (req, res) => {
   );
   if (!Chapter)
     return res.status(404).send("The Chapter with the given ID was not found.");
+  const students = await User.find();
+  const list = [];
+  students.forEach((element) => {
+    console.log(element.email);
+    list.push(element.email);
+  });
 
+  sendEmail(Chapter.chapterName, list, "Quiz");
   return res.status(201).send(true);
 });
 
@@ -64,13 +69,6 @@ router.delete("/:id", async (req, res) => {
   const del = await Quizzes.findByIdAndDelete(Chapter.quizzes.id);
   if (!del)
     return res.status(404).send("The Quiz with the given ID was not found.");
-  // Chapter = await Chapters.findByIdAndUpdate(
-  //   { _id: req.body.chapterID },
-  //   {
-  //     quizzes: {},
-  //   },
-  //   { new: true }
-  // );
   Chapter.set({ quizzes: {} });
   Chapter.save();
 
